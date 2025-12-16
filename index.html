@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>네일아트 살롱 💅</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ffc0cb 0%, #dda0dd 50%, #87ceeb 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+        .screen { display: none; }
+        .screen.active { display: block; }
+        
+        /* Start Screen */
+        .start-screen { display: flex; align-items: center; justify-content: center; min-height: 90vh; }
+        .start-box { background: white; border-radius: 20px; padding: 40px 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-width: 400px; width: 100%; }
+        .start-emoji { font-size: 80px; margin-bottom: 15px; }
+        .start-title { font-size: 36px; font-weight: bold; background: linear-gradient(135deg, #ff1493, #9370db); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 15px; }
+        .start-desc { color: #666; font-size: 16px; margin-bottom: 30px; }
+        .btn-start { background: linear-gradient(135deg, #ff1493, #9370db); color: white; border: none; padding: 18px 40px; border-radius: 30px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.2); width: 100%; }
+        
+        /* Design Screen */
+        .design-container { max-width: 500px; margin: 0 auto; padding-bottom: 20px; }
+        .header { background: white; border-radius: 15px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .header-title { font-size: 20px; font-weight: bold; background: linear-gradient(135deg, #ff1493, #9370db); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .progress { font-size: 14px; color: #666; }
+        .hand-selector { display: flex; gap: 8px; }
+        .hand-btn { flex: 1; padding: 12px; border: none; border-radius: 10px; background: #e0e0e0; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .hand-btn.active { background: linear-gradient(135deg, #ff1493, #9370db); color: white; }
+        
+        /* Nail Selector */
+        .nail-selector { background: white; border-radius: 15px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .nail-selector-title { font-size: 16px; font-weight: bold; margin-bottom: 10px; text-align: center; }
+        .nail-buttons { display: flex; gap: 8px; justify-content: center; }
+        .nail-select-btn { flex: 1; padding: 10px 5px; border: none; border-radius: 10px; background: #f0f0f0; cursor: pointer; font-size: 12px; font-weight: bold; transition: all 0.2s; }
+        .nail-select-btn.active { background: linear-gradient(135deg, #ff1493, #9370db); color: white; box-shadow: 0 0 0 3px rgba(255, 20, 147, 0.3); }
+        .nail-select-btn.done { background: #98fb98; }
+        
+        /* Shape Selector */
+        .shape-selector { background: white; border-radius: 15px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .shape-title { font-size: 16px; font-weight: bold; margin-bottom: 10px; text-align: center; }
+        .shape-buttons { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .shape-btn { padding: 12px; border: none; border-radius: 10px; background: #f0f0f0; cursor: pointer; font-size: 13px; font-weight: bold; }
+        .shape-btn.active { background: linear-gradient(135deg, #ff1493, #9370db); color: white; }
+        
+        /* Current Nail Display */
+        .nail-display { background: white; border-radius: 15px; padding: 30px 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center; }
+        .nail-display-title { font-size: 18px; font-weight: bold; color: #ff1493; margin-bottom: 20px; }
+        .nail-large { width: 160px; height: 224px; margin: 0 auto 20px; cursor: pointer; position: relative; overflow: hidden; box-shadow: 0 8px 16px rgba(0,0,0,0.15), inset 0 2px 4px rgba(255,255,255,0.3); border: 4px solid rgba(0,0,0,0.1); }
+        .nail-large.painting { animation: pulse 0.5s ease-in-out; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        
+        .nail-large.round { border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; }
+        .nail-large.square { border-radius: 16px 16px 6px 6px; }
+        .nail-large.almond { border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%; }
+        .nail-large.stiletto { border-radius: 50% 50% 50% 50% / 80% 80% 20% 20%; }
+        
+        .nail-tip { position: absolute; bottom: 0; left: 0; right: 0; height: 48px; background: white; opacity: 0.2; border-radius: 0 0 50% 50%; }
+        .nail-gloss { position: absolute; top: 24px; left: 50%; transform: translateX(-50%); width: 96px; height: 48px; background: white; opacity: 0.4; border-radius: 50%; filter: blur(8px); }
+        .nail-pattern { position: absolute; inset: 0; opacity: 0.4; mix-blend-mode: overlay; }
+        .nail-emoji-pattern { position: absolute; font-size: 20px; opacity: 0.8; }
+        .nail-sticker { position: absolute; font-size: 32px; pointer-events: none; transform: translate(-50%, -50%); }
+        .painting-brush { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; font-size: 60px; animation: bounce 0.5s ease-in-out; }
+        .nail-large.painting .painting-brush { display: flex; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        
+        .clear-nail-btn { background: #dc3545; color: white; border: none; border-radius: 10px; padding: 10px 20px; cursor: pointer; font-weight: bold; margin-bottom: 10px; }
+        .info-text { font-size: 13px; color: #666; }
+        
+        /* Tools */
+        .tools { background: white; border-radius: 15px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .tools-title { font-size: 16px; font-weight: bold; margin-bottom: 10px; }
+        .tool-buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px; }
+        .tool-btn { padding: 15px 5px; border: none; border-radius: 10px; background: #f0f0f0; cursor: pointer; font-size: 11px; font-weight: bold; text-align: center; }
+        .tool-btn.active { box-shadow: 0 3px 8px rgba(0,0,0,0.2); }
+        .tool-btn.color.active { background: #ff1493; color: white; }
+        .tool-btn.pattern.active { background: #9370db; color: white; }
+        .tool-btn.sticker.active { background: #4169e1; color: white; }
+        .tool-emoji { font-size: 24px; display: block; margin-bottom: 3px; }
+        
+        /* Colors */
+        .color-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+        .color-btn { width: 100%; aspect-ratio: 1; border: 3px solid rgba(0,0,0,0.1); border-radius: 50%; cursor: pointer; transition: all 0.2s; }
+        .color-btn.selected { box-shadow: 0 0 0 3px #ff1493; transform: scale(1.1); }
+        
+        /* Patterns */
+        .pattern-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .pattern-btn { padding: 15px; border: none; border-radius: 10px; background: #f0f0f0; cursor: pointer; text-align: center; }
+        .pattern-btn.selected { background: #9370db; color: white; box-shadow: 0 0 0 3px rgba(147, 112, 219, 0.3); }
+        .pattern-emoji { font-size: 24px; display: block; margin-bottom: 5px; }
+        .pattern-name { font-size: 11px; font-weight: bold; }
+        
+        /* Stickers */
+        .sticker-section { max-height: 300px; overflow-y: auto; }
+        .sticker-category { margin-bottom: 15px; }
+        .category-title { font-size: 11px; font-weight: bold; color: #666; margin-bottom: 8px; }
+        .sticker-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+        .sticker-btn { aspect-ratio: 1; border: none; border-radius: 8px; background: #f0f0f0; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; }
+        .sticker-btn.selected { background: #4169e1; box-shadow: 0 0 0 3px rgba(65, 105, 225, 0.3); }
+        
+        /* Navigation */
+        .nav-buttons { display: flex; gap: 10px; }
+        .nav-btn { flex: 1; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .btn-next { background: linear-gradient(135deg, #ff1493, #9370db); color: white; }
+        .btn-skip { background: #6c757d; color: white; }
+        .btn-complete { background: linear-gradient(135deg, #4caf50, #45a049); color: white; }
+        
+        /* Complete Screen */
+        .complete-screen { max-width: 500px; margin: 0 auto; padding: 10px; }
+        .complete-box { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .complete-header { text-align: center; margin-bottom: 30px; }
+        .complete-emoji { font-size: 50px; margin-bottom: 10px; }
+        .complete-title { font-size: 32px; font-weight: bold; background: linear-gradient(135deg, #ff1493, #9370db); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 5px; }
+        .complete-desc { color: #666; font-size: 14px; }
+        
+        .complete-hand { margin-bottom: 30px; }
+        .complete-hand-title { text-align: center; font-size: 18px; font-weight: bold; margin-bottom: 15px; }
+        .complete-hand-title.left { color: #ff1493; }
+        .complete-hand-title.right { color: #9370db; }
+        .complete-nails { background: linear-gradient(135deg, #ffe4e1, #e6e6fa); padding: 20px; border-radius: 12px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+        
+        .nail-small { width: 50px; height: 70px; position: relative; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.15), inset 0 1px 2px rgba(255,255,255,0.3); border: 2px solid rgba(0,0,0,0.1); }
+        .nail-small.round { border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; }
+        .nail-small.square { border-radius: 5px 5px 2px 2px; }
+        .nail-small.almond { border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%; }
+        .nail-small.stiletto { border-radius: 50% 50% 50% 50% / 80% 80% 20% 20%; }
+        .nail-small .nail-tip { height: 15px; }
+        .nail-small .nail-gloss { top: 8px; width: 30px; height: 15px; }
+        .nail-small .nail-emoji-pattern { font-size: 8px; }
+        .nail-small .nail-sticker { font-size: 14px; }
+        .nail-label { text-align: center; font-size: 10px; color: #666; margin-top: 5px; }
+        
+        .complete-buttons { display: flex; gap: 10px; }
+        .btn-redesign { background: linear-gradient(135deg, #ff1493, #9370db); color: white; padding: 15px; border: none; border-radius: 10px; font-size: 14px; font-weight: bold; cursor: pointer; flex: 1; }
+        .btn-restart { background: #6c757d; color: white; padding: 15px; border: none; border-radius: 10px; font-size: 14px; font-weight: bold; cursor: pointer; flex: 1; }
+    </style>
+</head>
+<body>
+    <div id="startScreen" class="screen active">
+        <div class="start-screen">
+            <div class="start-box">
+                <div class="start-emoji">💅</div>
+                <h1 class="start-title">네일아트 살롱</h1>
+                <p class="start-desc">나만의 멋진 네일아트를<br>디자인하세요!</p>
+                <button class="btn-start" onclick="startGame()">시작하기 ✨</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="designScreen" class="screen">
+        <div class="design-container">
+            <div class="header">
+                <div class="header-top">
+                    <div class="header-title">✨ 네일아트</div>
+                    <div class="progress" id="progress"></div>
+                </div>
+                <div class="hand-selector">
+                    <button class="hand-btn active" onclick="selectHand('left')">왼손 👈</button>
+                    <button class="hand-btn" onclick="selectHand('right')">오른손 👉</button>
+                </div>
+            </div>
+
+            <div class="nail-selector">
+                <div class="nail-selector-title">손톱 선택</div>
+                <div class="nail-buttons" id="nailButtons"></div>
+            </div>
+
+            <div class="shape-selector">
+                <div class="shape-title">✂️ 손톱 모양</div>
+                <div class="shape-buttons" id="shapeButtons"></div>
+            </div>
+
+            <div class="nail-display">
+                <div class="nail-display-title" id="currentNailTitle"></div>
+                <div class="nail-large" id="currentNail" onclick="clickCurrentNail(event)">
+                    <div class="nail-tip"></div>
+                    <div class="nail-gloss"></div>
+                    <div class="painting-brush">🖌️</div>
+                </div>
+                <button class="clear-nail-btn" onclick="clearCurrentNail()">현재 손톱 지우기</button>
+                <p class="info-text" id="toolInfo"></p>
+            </div>
+
+            <div class="tools">
+                <div class="tools-title">🎨 도구</div>
+                <div class="tool-buttons" id="toolButtons"></div>
+                <div id="colorPanel" style="display:none;">
+                    <div class="color-grid" id="colorGrid"></div>
+                </div>
+                <div id="patternPanel" style="display:none;">
+                    <div class="pattern-grid" id="patternGrid"></div>
+                </div>
+                <div id="stickerPanel" style="display:none;">
+                    <div class="sticker-section" id="stickerSection"></div>
+                </div>
+            </div>
+
+            <div class="nav-buttons" id="navButtons"></div>
+        </div>
+    </div>
+
+    <div id="completeScreen" class="screen">
+        <div class="complete-screen">
+            <div class="complete-box">
+                <div class="complete-header">
+                    <div class="complete-emoji">✨💅✨</div>
+                    <h2 class="complete-title">완성!</h2>
+                    <p class="complete-desc">당신의 멋진 네일아트</p>
+                </div>
+                <div class="complete-hand">
+                    <h3 class="complete-hand-title left">왼손 👈</h3>
+                    <div class="complete-nails" id="completeLeft"></div>
+                </div>
+                <div class="complete-hand">
+                    <h3 class="complete-hand-title right">오른손 👉</h3>
+                    <div class="complete-nails" id="completeRight"></div>
+                </div>
+                <div class="complete-buttons">
+                    <button class="btn-redesign" onclick="backToDesign()">다시 꾸미기</button>
+                    <button class="btn-restart" onclick="restartGame()">처음으로</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var state = {
+            screen: 'start',
+            hand: 'left',
+            currentNail: 0,
+            shape: 'round',
+            tool: 'color',
+            color: '#FF1493',
+            pattern: null,
+            sticker: null,
+            nails: {
+                left: [{polish:'#FFE4C4',pattern:null,stickers:[]},{polish:'#FFE4C4',pattern:null,stickers:[]},{polish:'#FFE4C4',pattern:null,stickers:[]},{polish:'#FFE4C4',pattern:null,stickers:[]},{polish:'#FFE4C4',pattern:null,stickers:[]}],
+                right: [{polish:'#FFE4C4',pattern:null,stickers:[]},{polish:'#FFE4C4',pattern:null,stickers:[]},{polish:'#FFE4C4',pattern:null,stickers:[]},{polish:'#FFE4C4',pattern:null,stickers:[]},{polish:'#FFE4C4',pattern:null,stickers:[]}]
+            }
+        };
+
+        var colors = ['#FF1493','#FF69B4','#FFB6C1','#FFC0CB','#C71585','#FF6347','#FF4500','#FFA500','#FFD700','#FFFF00','#98FB98','#00FA9A','#00CED1','#87CEEB','#4169E1','#9370DB','#BA55D3','#8B00FF','#000000','#FFFFFF','#FFE4E1','#F0E68C','#E6E6FA','#DDA0DD','#8B4513'];
+        var patterns = [
+            {name:'점무늬',type:'dots',gradient:'radial-gradient(circle,#fff 2px,transparent 2px)',size:'8px 8px'},
+            {name:'줄무늬',type:'stripes',gradient:'repeating-linear-gradient(45deg,#fff,#fff 3px,transparent 3px,transparent 6px)'},
+            {name:'체크',type:'check',gradient:'repeating-linear-gradient(0deg,#fff,#fff 5px,transparent 5px,transparent 10px),repeating-linear-gradient(90deg,#fff,#fff 5px,transparent 5px,transparent 10px)'},
+            {name:'하트',type:'hearts',emoji:'💕',multiple:true},
+            {name:'별',type:'stars',emoji:'⭐',multiple:true},
+            {name:'꽃',type:'flowers',emoji:'🌸',multiple:true},
+            {name:'반짝이',type:'sparkle',emoji:'✨',multiple:true},
+            {name:'물방울',type:'bubbles',gradient:'radial-gradient(circle at 20% 30%,rgba(255,255,255,0.8) 3px,transparent 3px),radial-gradient(circle at 60% 70%,rgba(255,255,255,0.8) 4px,transparent 4px),radial-gradient(circle at 80% 20%,rgba(255,255,255,0.8) 2px,transparent 2px)'}
+        ];
+        var stickers = {
+            '하트':['💗','💖','💝','💘','❤️','🩷','🤍','🖤'],
+            '별&반짝이':['⭐','🌟','✨','💫','⚡','🌠'],
+            '꽃':['🌸','🌺','🌻','🌹','🌷','💐','🌼'],
+            '나비&자연':['🦋','🐝','🌈','☁️','🌙','☀️'],
+            '리본&왕관':['🎀','👑','💎','💍','📿'],
+            '크리스마스':['🎄','🎅','🎁','⛄','❄️','🔔','🕯️','🧦'],
+            '기타':['🔮','🧚','🦄','🍓','🍒','🍰','☕','🎨']
+        };
+
+        function showScreen(name) {
+            var screens = document.querySelectorAll('.screen');
+            for(var i=0;i<screens.length;i++) screens[i].classList.remove('active');
+            document.getElementById(name+'Screen').classList.add('active');
+            state.screen = name;
+        }
+
+        function startGame() {
+            showScreen('design');
+            renderAll();
+        }
+
+        function showComplete() {
+            showScreen('complete');
+            renderComplete();
+        }
+
+        function backToDesign() {
+            showScreen('design');
+            renderAll();
+        }
+
+        function restartGame() {
+            state = {
+                screen: 'start',
+                hand: 'left',
+                currentNail: 0,
+                shape: 'round',
+                tool: 'color',
+                color: '#FF1493',
+                pattern: null,
+                sticker: null,
+                nails: {
+                    left: [{polish:'#FFE4C4',pattern:null,stickers:[]},{polish:'#FFE4C4',pattern:null,stickers:[]},{polish:'#FFE4C4',pattern:null,stickers:[]},{polish:'#FFE4C4',pattern:null,stickers:[]},{polish:'#FFE4C4',pattern:null,stickers:[]}],
+                    right: [{polish:'#FFE4C4',pattern:null,stickers:[]},{polish:'#FFE4C4',pattern:null,stickers:[]},{polish:'#FFE4C4',pattern:null,stickers:[]},{polish:'#FFE4C4',pattern:null,stickers:[]},{polish:'#FFE4C4',pattern:null,stickers:[]}]
+                }
+            };
+            showScreen('start');
+        }
+
+        function renderAll() {
+            renderProgress();
+            renderNailSelector();
+            renderShapes();
+            renderTools();
+            renderColors();
+            renderPatterns();
+            renderStickers();
+            renderCurrentNail();
+            renderNavButtons();
+        }
+
+        function renderProgress() {
+            var total = 10;
+            var done = 0;
+            for(var i=0;i<5;i++) {
+                if(state.nails.left[i].polish !== '#FFE4C4' || state.nails.left[i].pattern || state.nails.left[i].stickers.length > 0) done++;
+                if(state.nails.right[i].polish !== '#FFE4C4' || state.nails.right[i].pattern || state.nails.right[i].stickers.length > 0) done++;
+            }
+            document.getElementById('progress').textContent = done + '/' + total;
+        }
+
+        function renderNailSelector() {
+            var labels = ['엄지','검지','중지','약지','새끼'];
+            var html = '';
+            for(var i=0;i<5;i++) {
+                var data = state.nails[state.hand][i];
+                var isDone = data.polish !== '#FFE4C4' || data.pattern || data.stickers.length > 0;
+                var cls = 'nail-select-btn' + (i === state.currentNail ? ' active' : '') + (isDone ? ' done' : '');
+                html += '<button class="'+cls+'" onclick="selectNail('+i+')">'+labels[i]+'</button>';
+            }
+            document.getElementById('nailButtons').innerHTML = html;
+        }
+
+        function renderShapes() {
+            var shapes = [{id:'round',name:'둥근형'},{id:'square',name:'네모형'},{id:'almond',name:'아몬드형'},{id:'stiletto',name:'뾰족형'}];
+            var html = '';
+            for(var i=0;i<shapes.length;i++) {
+                var s = shapes[i];
+                var cls = s.id === state.shape ? 'shape-btn active' : 'shape-btn';
+                html += '<button class="'+cls+'" onclick="selectShape(\''+s.id+'\')">'+s.name+'</button>';
+            }
+            document.getElementById('shapeButtons').innerHTML = html;
+        }
+
+        function renderTools() {
+            var tools = [{id:'color',emoji:'🎨',name:'색상'},{id:'pattern',emoji:'✨',name:'패턴'},{id:'sticker',emoji:'💎',name:'스티커'}];
+            var html = '';
+            for(var i=0;i<tools.length;i++) {
+                var t = tools[i];
+                var cls = 'tool-btn '+t.id + (t.id === state.tool ? ' active' : '');
+                html += '<button class="'+cls+'" onclick="selectTool(\''+t.id+'\')"><span class="tool-emoji">'+t.emoji+'</span>'+t.name+'</button>';
+            }
+            document.getElementById('toolButtons').innerHTML = html;
+            
+            document.getElementById('colorPanel').style.display = state.tool === 'color' ? 'block' : 'none';
+            document.getElementById('patternPanel').style.display = state.tool === 'pattern' ? 'block' : 'none';
+            document.getElementById('stickerPanel').style.display = state.tool === 'sticker' ? 'block' : 'none';
+            
+            var info = state.tool === 'color' ? '색상을 선택하고 손톱을 터치하세요!' : state.tool === 'pattern' ? '패턴을 선택하고 손톱을 터치하세요!' : '스티커를 선택하고 원하는 위치를 터치하세요!';
+            document.getElementById('toolInfo').innerHTML = '💡 ' + info;
+        }
+
+        function renderColors() {
+            var html = '';
+            for(var i=0;i<colors.length;i++) {
+                var c = colors[i];
+                var cls = c === state.color ? 'color-btn selected' : 'color-btn';
+                html += '<button class="'+cls+'" style="background-color:'+c+'" onclick="selectColor(\''+c+'\')"></button>';
+            }
+            document.getElementById('colorGrid').innerHTML = html;
+        }
+
+        function renderPatterns() {
+            var html = '';
+            for(var i=0;i<patterns.length;i++) {
+                var p = patterns[i];
+                var cls = state.pattern && state.pattern.type === p.type ? 'pattern-btn selected' : 'pattern-btn';
+                var emoji = p.emoji || '✨';
+                html += '<button class="'+cls+'" onclick="selectPattern('+i+')"><span class="pattern-emoji">'+emoji+'</span><div class="pattern-name">'+p.name+'</div></button>';
+            }
+            document.getElementById('patternGrid').innerHTML = html;
+        }
+
+        function renderStickers() {
+            var html = '';
+            for(var cat in stickers) {
+                html += '<div class="sticker-category"><div class="category-title">'+cat+'</div><div class="sticker-grid">';
+                var items = stickers[cat];
+                for(var i=0;i<items.length;i++) {
+                    var s = items[i];
+                    var cls = s === state.sticker ? 'sticker-btn selected' : 'sticker-btn';
+                    html += '<button class="'+cls+'" onclick="selectSticker(\''+s+'\')">'+s+'</button>';
+                }
+                html += '</div></div>';
+            }
+            document.getElementById('stickerSection').innerHTML = html;
+        }
+
+        function renderCurrentNail() {
+            var labels = ['엄지','검지','중지','약지','새끼'];
+            var handName = state.hand === 'left' ? '왼손' : '오른손';
+            document.getElementById('currentNailTitle').textContent = handName + ' ' + labels[state.currentNail];
+            
+            var data = state.nails[state.hand][state.currentNail];
+            var nail = document.getElementById('currentNail');
+            nail.className = 'nail-large ' + state.shape;
+            nail.style.background = 'linear-gradient(135deg,'+data.polish+','+data.polish+'dd)';
+            
+            var contentHTML = '<div class="nail-tip"></div><div class="nail-gloss"></div>';
+            contentHTML += renderNailContent(data, true);
+            contentHTML += '<div class="painting-brush">🖌️</div>';
+            nail.innerHTML = contentHTML;
+        }
+
+        function renderNailContent(data, isLarge) {
+            var html = '';
+            var fontSize = isLarge ? 20 : 8;
+            var stickerSize = isLarge ? 32 : 14;
+            
+            if(data.pattern) {
+                if(data.pattern.gradient) {
+                    html += '<div class="nail-pattern" style="background:'+data.pattern.gradient+';background-size:'+(data.pattern.size||'auto')+'"></div>';
+                } else if(data.pattern.emoji && data.pattern.multiple) {
+                    for(var i=0;i<8;i++) {
+                        var x = 15+(i%3)*30+Math.random()*10;
+                        var y = 15+Math.floor(i/3)*25+Math.random()*10;
+                        var r = Math.random()*360;
+                        html += '<div class="nail-emoji-pattern" style="left:'+x+'%;top:'+y+'%;font-size:'+fontSize+'px;transform:rotate('+r+'deg) translate(-50%,-50%)">'+data.pattern.emoji+'</div>';
+                    }
+                }
+            }
+            for(var i=0;i<data.stickers.length;i++) {
+                var st = data.stickers[i];
+                html += '<div class="nail-sticker" style="left:'+st.x+'%;top:'+st.y+'%;font-size:'+stickerSize+'px">'+st.emoji+'</div>';
+            }
+            return html;
+        }
+
+        function renderNavButtons() {
+            var html = '';
+            var isLastNail = (state.hand === 'right' && state.currentNail === 4);
+            
+            if(isLastNail) {
+                html += '<button class="nav-btn btn-complete" onclick="showComplete()">완성! ✨</button>';
+            } else {
+                html += '<button class="nav-btn btn-next" onclick="nextNail()">다음 손톱 →</button>';
+                html += '<button class="nav-btn btn-skip" onclick="nextNail()">건너뛰기</button>';
+            }
+            document.getElementById('navButtons').innerHTML = html;
+        }
+
+        function renderComplete() {
+            var hands = ['left','right'];
+            var labels = ['엄지','검지','중지','약지','새끼'];
+            
+            for(var h=0;h<hands.length;h++) {
+                var hand = hands[h];
+                var id = 'complete'+(hand==='left'?'Left':'Right');
+                var html = '';
+                for(var i=0;i<5;i++) {
+                    var data = state.nails[hand][i];
+                    html += '<div style="text-align:center;">';
+                    html += '<div class="nail-small '+state.shape+'" style="background:linear-gradient(135deg,'+data.polish+','+data.polish+'dd)">';
+                    html += '<div class="nail-tip"></div><div class="nail-gloss"></div>';
+                    html += renderNailContent(data, false);
+                    html += '</div>';
+                    html += '<div class="nail-label">'+labels[i]+'</div>';
+                    html += '</div>';
+                }
+                document.getElementById(id).innerHTML = html;
+            }
+        }
+
+        function selectHand(hand) {
+            state.hand = hand;
+            state.currentNail = 0;
+            var btns = document.querySelectorAll('.hand-btn');
+            for(var i=0;i<btns.length;i++) btns[i].classList.remove('active');
+            event.target.classList.add('active');
+            renderAll();
+        }
+
+        function selectNail(i) {
+            state.currentNail = i;
+            renderAll();
+        }
+
+        function selectShape(shape) {
+            state.shape = shape;
+            renderShapes();
+            renderCurrentNail();
+        }
+
+        function selectTool(tool) {
+            state.tool = tool;
+            state.pattern = null;
+            state.sticker = null;
+            renderTools();
+            renderPatterns();
+            renderStickers();
+        }
+
+        function selectColor(color) {
+            state.color = color;
+            renderColors();
+        }
+
+        function selectPattern(i) {
+            state.pattern = patterns[i];
+            renderPatterns();
+        }
+
+        function selectSticker(s) {
+            state.sticker = s;
+            renderStickers();
+        }
+
+        function clickCurrentNail(e) {
+            var nail = document.getElementById('currentNail');
+            var data = state.nails[state.hand][state.currentNail];
+            
+            if(state.tool === 'color') {
+                nail.classList.add('painting');
+                setTimeout(function() {
+                    data.polish = state.color;
+                    nail.classList.remove('painting');
+                    renderCurrentNail();
+                    renderNailSelector();
+                    renderProgress();
+                }, 500);
+            } else if(state.tool === 'pattern' && state.pattern) {
+                data.pattern = state.pattern;
+                renderCurrentNail();
+                renderNailSelector();
+                renderProgress();
+            } else if(state.tool === 'sticker' && state.sticker) {
+                var rect = nail.getBoundingClientRect();
+                var x = ((e.clientX - rect.left) / rect.width) * 100;
+                var y = ((e.clientY - rect.top) / rect.height) * 100;
+                data.stickers.push({emoji:state.sticker,x:x,y:y});
+                renderCurrentNail();
+                renderNailSelector();
+                renderProgress();
+            }
+        }
+
+        function clearCurrentNail() {
+            state.nails[state.hand][state.currentNail] = {polish:'#FFE4C4',pattern:null,stickers:[]};
+            renderCurrentNail();
+            renderNailSelector();
+            renderProgress();
+        }
+
+        function nextNail() {
+            if(state.currentNail < 4) {
+                state.currentNail++;
+            } else if(state.hand === 'left') {
+                state.hand = 'right';
+                state.currentNail = 0;
+                var btns = document.querySelectorAll('.hand-btn');
+                btns[0].classList.remove('active');
+                btns[1].classList.add('active');
+            }
+            renderAll();
+        }
+    </script>
+</body>
+</html>
